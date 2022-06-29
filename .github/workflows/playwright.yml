@@ -44,8 +44,14 @@ jobs:
       run: npx playwright install --with-deps
 
   test:
+    name: 🧪 Test (${{ matrix.shard }}/${{ strategy.job-total }})
     needs: setup
     runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
     steps:
     - uses: actions/checkout@v2
 
@@ -62,11 +68,11 @@ jobs:
       run: npx playwright install --with-deps
 
     - name: Run Playwright tests
-      run: npx playwright test
+      run: npx playwright test --shard=${{ matrix.shard }}/${{ strategy.job-total }}
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       if: always()
       with:
-        name: playwright-report
-        path: playwright-report/
+        name: playwright-report-${{ matrix.shard }}_${{ strategy.job-total }}
+        path: playwright-report
         retention-days: 30
